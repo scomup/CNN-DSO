@@ -879,7 +879,7 @@ void FullSystem::addActiveFrame( ImageAndExposure* image, int id )
 	// =========================== make Images / derivatives etc. =========================
 	fh->ab_exposure = image->exposure_time;
     fh->makeImages(image->image, &Hcalib);
-
+	fh->depth = image->depth;
 
 
 
@@ -888,7 +888,7 @@ void FullSystem::addActiveFrame( ImageAndExposure* image, int id )
 		// use initializer!
 		if(coarseInitializer->frameID<0)	// first frame set. fh is kept by coarseInitializer.
 		{
-			coarseInitializer->setFirst(&Hcalib, fh, image->depth);
+			coarseInitializer->setFirst(&Hcalib, fh);
 			initialized=true;
 		}
 
@@ -1360,7 +1360,7 @@ void FullSystem::initializeFromInitializerCNN(FrameHessian* newFrame)
 		printf("Initialization: keep %.1f%% (need %d, have %d)!\n", 100*keepPercentage,
 			   (int)(setting_desiredPointDensity), coarseInitializer->numPoints[0] );
 
-	float* depthmap_ptr;
+	float* depthmap_ptr = newFrame->depth;
 
 	for(int i=0;i<coarseInitializer->numPoints[0];i++)
 	{
@@ -1427,7 +1427,7 @@ void FullSystem::initializeFromInitializerCNN(FrameHessian* newFrame)
 	newFrame->pointHessiansMarginalized.reserve(numPointsTotal*1.2f);
 	newFrame->pointHessiansOut.reserve(numPointsTotal*1.2f);
 
-	cv::Mat depth = getDepthMap(newFrame);
+	cv::Mat depth = cv::Mat(cv::Size(wG[0], hG[0]), CV_32F, newFrame->depth); // CV_64F is equivalent double
     for (IOWrap::Output3DWrapper *ow : outputWrapper)
         ow->pushCNNImage(depth);
 

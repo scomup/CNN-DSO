@@ -117,7 +117,6 @@ void FrameHessian::release()
 	for(unsigned int i=0;i<pointHessiansOut.size();i++) delete pointHessiansOut[i];
 	for(unsigned int i=0;i<immaturePoints.size();i++) delete immaturePoints[i];
 
-
 	pointHessians.clear();
 	pointHessiansMarginalized.clear();
 	pointHessiansOut.clear();

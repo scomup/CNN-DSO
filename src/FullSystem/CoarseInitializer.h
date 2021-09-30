@@ -83,7 +83,7 @@ public:
 	~CoarseInitializer();
 
 
-	void setFirst(CalibHessian* HCalib, FrameHessian* newFrameHessian, float* depthmap);
+	void setFirst(CalibHessian* HCalib, FrameHessian* newFrameHessian);
 
 	int frameID;
 	bool fixAffine;

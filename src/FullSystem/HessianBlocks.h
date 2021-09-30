@@ -121,6 +121,7 @@ struct FrameHessian
 	float* absSquaredGrad[PYR_LEVELS];  // only used for pixel select (histograms etc.). no NAN.
 
 	float* instensity;
+	float* depth;
 
 
 

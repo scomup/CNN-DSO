@@ -84,7 +84,7 @@ CoarseInitializer::~CoarseInitializer()
 
 
 
-void CoarseInitializer::setFirst(CalibHessian* HCalib, FrameHessian* newFrameHessian, float* depth)
+void CoarseInitializer::setFirst(CalibHessian* HCalib, FrameHessian* newFrameHessian)
 {
 
     makeK(HCalib);
@@ -127,7 +127,7 @@ void CoarseInitializer::setFirst(CalibHessian* HCalib, FrameHessian* newFrameHes
         Pnt* pl = points[lvl];
         int nl = 0;
 
-    	float* depthmap_ptr = depth;
+    	float* depthmap_ptr = newFrameHessian->depth;
 
         for(int y=patternPadding+1;y<hl-patternPadding-2;y++)
             for(int x=patternPadding+1;x<wl-patternPadding-2;x++)
