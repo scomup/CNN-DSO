@@ -25,7 +25,7 @@ find_package(OpenCV QUIET)
 # flags
 add_definitions("-DENABLE_SSE")
 set(CMAKE_CXX_FLAGS
-   "${SSE_FLAGS} -O3 -g -std=c++0x -march=native"
+   "${SSE_FLAGS} -O0 -g -std=c++0x -march=native"
 #   "${SSE_FLAGS} -O3 -g -std=c++0x -fno-omit-frame-pointer"
 )
 
@@ -53,6 +53,8 @@ set(dso_SOURCE_FILES
   ${PROJECT_SOURCE_DIR}/src/util/settings.cpp
   ${PROJECT_SOURCE_DIR}/src/util/Undistort.cpp
   ${PROJECT_SOURCE_DIR}/src/util/globalCalib.cpp
+  ${PROJECT_SOURCE_DIR}/src/util/cnpy.cpp
+
 )
 
 
@@ -112,11 +114,6 @@ endif()
 include_directories( ${CSPARSE_INCLUDE_DIR} ${CHOLMOD_INCLUDE_DIR}) 
 add_library(dso ${dso_SOURCE_FILES} ${dso_opencv_SOURCE_FILES} ${dso_pangolin_SOURCE_FILES})
 
-#TensorFlow and monodepth
-include_directories(/abosolute/path/to/tensorflow/local/include/google/tensorflow)
-include_directories(/abosolute/path/to/tensorflow/bazel-tensorflow/external/nsync/public)
-set(monodepth_INCLUDE_DIRS /abosolute/path/to/monodepth/install/include)
-INCLUDE_DIRECTORIES(${monodepth_INCLUDE_DIRS})
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin") # OSX
     set(BOOST_THREAD_LIBRARY boost_thread-mt)
@@ -128,8 +125,7 @@ endif()
 if (OpenCV_FOUND AND Pangolin_FOUND)
 	message("--- compiling dso_dataset.")
 	add_executable(dso_dataset ${PROJECT_SOURCE_DIR}/src/main_dso_pangolin.cpp )
-	target_link_libraries(dso_dataset dso boost_system cxsparse ${BOOST_THREAD_LIBRARY} ${LIBZIP_LIBRARY} ${Pangolin_LIBRARIES} ${OpenCV_LIBS} /home/hide/Downloads/1.6/tensorflow/local/lib/libtensorflow_cc.so)
-	TARGET_LINK_LIBRARIES(dso_dataset /abosolute/path/to/monodepth-cpp/monodepth-lib/install/lib/libmonodepth_static.a)
+	target_link_libraries(dso_dataset dso boost_system cxsparse ${BOOST_THREAD_LIBRARY} ${LIBZIP_LIBRARY} ${Pangolin_LIBRARIES} ${OpenCV_LIBS})
 
 else()
 	message("--- not building dso_dataset, since either don't have openCV or Pangolin.")

@@ -39,9 +39,8 @@
 #include "util/IndexThreadReduce.h"
 #include "OptimizationBackend/EnergyFunctional.h"
 #include "FullSystem/PixelSelector2.h"
-
+#include <opencv2/opencv.hpp>
 #include <math.h>
-#include <monodepth/monodepth.h>
 
 namespace dso
 {
@@ -163,7 +162,6 @@ public:
 	void setGammaFunction(float* BInv);
 	void setOriginalCalib(const VecXf &originalCalib, int originalW, int originalH);
 
-	monodepth::MonoDepth* depthPredictor;
 
 private:
 

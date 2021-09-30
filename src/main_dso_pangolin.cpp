@@ -44,15 +44,15 @@
 #include "FullSystem/FullSystem.h"
 #include "OptimizationBackend/MatrixAccumulators.h"
 #include "FullSystem/PixelSelector2.h"
-
-
+#include "util/cnpy.h"
 
 #include "IOWrapper/Pangolin/PangolinDSOViewer.h"
 #include "IOWrapper/OutputWrapper/SampleOutputWrapper.h"
 
 std::string vignette = "";
 std::string gammaCalib = "";
-std::string source = "";
+std::string img_path = "";
+std::string depth_path = "";
 std::string calib = "";
 std::string cnn="";
 double rescale = 1;
@@ -264,10 +264,17 @@ void parseArgument(char* arg)
 		return;
 	}
 
-	if(1==sscanf(arg,"files=%s",buf))
+	if(1==sscanf(arg,"img_path=%s",buf))
 	{
-		source = buf;
-		printf("loading data from %s!\n", source.c_str());
+		img_path = buf;
+		printf("loading data from %s!\n", img_path.c_str());
+		return;
+	}
+
+	if(1==sscanf(arg,"depth_path=%s",buf))
+	{
+		depth_path = buf;
+		printf("loading data from %s!\n", depth_path.c_str());
 		return;
 	}
 
@@ -367,7 +374,7 @@ int main( int argc, char** argv )
 	boost::thread exThread = boost::thread(exitThread);
 
 
-	ImageFolderReader* reader = new ImageFolderReader(source,calib, gammaCalib, vignette);
+	ImageFolderReader* reader = new ImageFolderReader(img_path, depth_path, calib, gammaCalib, vignette);
 	reader->setGlobalCalibration();
 
 

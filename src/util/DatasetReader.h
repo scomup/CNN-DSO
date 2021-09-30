@@ -34,6 +34,7 @@
 
 #include "util/Undistort.h"
 #include "IOWrapper/ImageRW.h"
+#include "util/cnpy.h"
 
 #if HAS_ZIPLIB
 	#include "zip.h"
@@ -102,52 +103,13 @@ struct PrepImageItem
 class ImageFolderReader
 {
 public:
-	ImageFolderReader(std::string path, std::string calibFile, std::string gammaFile, std::string vignetteFile)
+	ImageFolderReader(std::string img_path, std::string depth_path, std::string calibFile, std::string gammaFile, std::string vignetteFile)
 	{
-		this->path = path;
 		this->calibfile = calibFile;
 
-#if HAS_ZIPLIB
-		ziparchive=0;
-		databuffer=0;
-#endif
 
-		isZipped = (path.length()>4 && path.substr(path.length()-4) == ".zip");
-
-
-
-
-
-		if(isZipped)
-		{
-#if HAS_ZIPLIB
-			int ziperror=0;
-			ziparchive = zip_open(path.c_str(),  ZIP_RDONLY, &ziperror);
-			if(ziperror!=0)
-			{
-				printf("ERROR %d reading archive %s!\n", ziperror, path.c_str());
-				exit(1);
-			}
-
-			files.clear();
-			int numEntries = zip_get_num_entries(ziparchive, 0);
-			for(int k=0;k<numEntries;k++)
-			{
-				const char* name = zip_get_name(ziparchive, k,  ZIP_FL_ENC_STRICT);
-				std::string nstr = std::string(name);
-				if(nstr == "." || nstr == "..") continue;
-				files.push_back(name);
-			}
-
-			printf("got %d entries and %d files!\n", numEntries, (int)files.size());
-			std::sort(files.begin(), files.end());
-#else
-			printf("ERROR: cannot read .zip archive, as compile without ziplib!\n");
-			exit(1);
-#endif
-		}
-		else
-			getdir (path, files);
+		getdir (img_path, files);
+		getdir (depth_path, depth_files);
 
 
 		undistort = Undistort::getUndistorterForFile(calibFile, gammaFile, vignetteFile);
@@ -166,12 +128,6 @@ public:
 	}
 	~ImageFolderReader()
 	{
-#if HAS_ZIPLIB
-		if(ziparchive!=0) zip_close(ziparchive);
-		if(databuffer!=0) delete databuffer;
-#endif
-
-
 		delete undistort;
 	};
 
@@ -244,50 +200,28 @@ private:
 
 	MinimalImageB* getImageRaw_internal(int id, int unused)
 	{
-		if(!isZipped)
-		{
-			// CHANGE FOR ZIP FILE
-			return IOWrap::readImageBW_8U(files[id]);
-		}
-		else
-		{
-#if HAS_ZIPLIB
-			if(databuffer==0) databuffer = new char[widthOrg*heightOrg*6+10000];
-			zip_file_t* fle = zip_fopen(ziparchive, files[id].c_str(), 0);
-			long readbytes = zip_fread(fle, databuffer, (long)widthOrg*heightOrg*6+10000);
-
-			if(readbytes > (long)widthOrg*heightOrg*6)
-			{
-				printf("read %ld/%ld bytes for file %s. increase buffer!!\n", readbytes,(long)widthOrg*heightOrg*6+10000, files[id].c_str());
-				delete[] databuffer;
-				databuffer = new char[(long)widthOrg*heightOrg*30];
-				fle = zip_fopen(ziparchive, files[id].c_str(), 0);
-				readbytes = zip_fread(fle, databuffer, (long)widthOrg*heightOrg*30+10000);
-
-				if(readbytes > (long)widthOrg*heightOrg*30)
-				{
-					printf("buffer still to small (read %ld/%ld). abort.\n", readbytes,(long)widthOrg*heightOrg*30+10000);
-					exit(1);
-				}
-			}
-
-			return IOWrap::readStreamBW_8U(databuffer, readbytes);
-#else
-			printf("ERROR: cannot read .zip archive, as compile without ziplib!\n");
-			exit(1);
-#endif
-		}
+		return IOWrap::readImageBW_8U(files[id]);
 	}
 
 
 	ImageAndExposure* getImage_internal(int id, int unused)
 	{
 		MinimalImageB* minimg = getImageRaw_internal(id, 0);
+		cnpy::NpyArray npy_data = cnpy::npy_load(depth_files[id]);
+		int data_row = npy_data.shape[0];
+		int data_col = npy_data.shape[1];
+		float* depth = static_cast<float *>(malloc(data_row * data_col * sizeof(float)));
+		memcpy(depth, npy_data.data<float>(), data_row * data_col * sizeof(float));
+
+
+
 		ImageAndExposure* ret2 = undistort->undistort<unsigned char>(
 				minimg,
+				depth,
 				(exposures.size() == 0 ? 1.0f : exposures[id]),
 				(timestamps.size() == 0 ? 0.0 : timestamps[id]));
 		delete minimg;
+
 		return ret2;
 	}
 
@@ -360,6 +294,7 @@ private:
 
 	std::vector<ImageAndExposure*> preloadedImages;
 	std::vector<std::string> files;
+	std::vector<std::string> depth_files;
 	std::vector<double> timestamps;
 	std::vector<float> exposures;
 
@@ -368,12 +303,5 @@ private:
 
 	std::string path;
 	std::string calibfile;
-
-	bool isZipped;
-
-#if HAS_ZIPLIB
-	zip_t* ziparchive;
-	char* databuffer;
-#endif
 };
 

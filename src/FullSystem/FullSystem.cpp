@@ -56,8 +56,8 @@
 
 #include <cmath>
 
-#include <monodepth/monodepth.h>
 #include <chrono>
+//#include <opencv2/opencv.hpp>
 
 namespace dso
 {
@@ -170,9 +170,6 @@ FullSystem::FullSystem(const std::string &path_cnn) {
     minIdJetVisTracker = -1;
     maxIdJetVisTracker = -1;
 
-	depthPredictor = new monodepth::MonoDepth(wG[0], hG[0], path_cnn);
-//	depthPredictor = new monodepth::MonoDepth(wG[0], hG[0],
-//                                  "/home/hide/catkin_ws/src/CNN-SVO/rpg_svo/monodepth-cpp/model/model_city2kitti.pb");
 }
 FullSystem::~FullSystem()
 {
@@ -205,7 +202,6 @@ FullSystem::~FullSystem()
 	delete coarseInitializer;
 	delete pixelSelector;
 	delete ef;
-	delete depthPredictor;
 }
 
 void FullSystem::setOriginalCalib(const VecXf &originalCalib, int originalW, int originalH)
@@ -892,7 +888,7 @@ void FullSystem::addActiveFrame( ImageAndExposure* image, int id )
 		// use initializer!
 		if(coarseInitializer->frameID<0)	// first frame set. fh is kept by coarseInitializer.
 		{
-			coarseInitializer->setFirst(&Hcalib, fh, getDepthMap(fh));
+			coarseInitializer->setFirst(&Hcalib, fh, image->depth);
 			initialized=true;
 		}
 
@@ -1364,9 +1360,7 @@ void FullSystem::initializeFromInitializerCNN(FrameHessian* newFrame)
 		printf("Initialization: keep %.1f%% (need %d, have %d)!\n", 100*keepPercentage,
 			   (int)(setting_desiredPointDensity), coarseInitializer->numPoints[0] );
 
-	cv::Mat depth = getDepthMap(firstFrame);
-
-	float* depthmap_ptr = (float*) depth.data;
+	float* depthmap_ptr;
 
 	for(int i=0;i<coarseInitializer->numPoints[0];i++)
 	{
@@ -1529,7 +1523,7 @@ cv::Mat FullSystem::getDepthMap(FrameHessian* fh){
             ptr[y*wG[0]+x]=fh->dI[y*wG[0]+x][0];
 	cv::Mat depth;
 	cv::cvtColor ( image, image, CV_GRAY2BGR );
-	depthPredictor->inference(image, depth);
+	//depthPredictor->inference(image, depth);
 	depth = 0.3128f / (depth + 0.00001f);
 
 	return depth;

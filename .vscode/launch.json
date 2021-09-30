@@ -1,0 +1,31 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/home/liu/workspace/CNN-DSO/build/bin/dso_dataset",
+            "args": ["img_path=/media/liu/SSD-PSMU3/kitti_slam/00/image_2/",
+                     "depth_path=/home/liu/workspace/VisualLidar/depth/",
+                     "calib=/home/liu/workspace/CNN-DSO/config/camera.txt",
+                     "preset=0",
+                     "mode=1"],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}

@@ -30,7 +30,6 @@
 #include "util/settings.h"
 #include "vector"
 #include <math.h>
-#include <monodepth/monodepth.h>
 
 
 
@@ -84,7 +83,7 @@ public:
 	~CoarseInitializer();
 
 
-	void setFirst(CalibHessian* HCalib, FrameHessian* newFrameHessian, cv::Mat depthmap);
+	void setFirst(CalibHessian* HCalib, FrameHessian* newFrameHessian, float* depthmap);
 
 	int frameID;
 	bool fixAffine;

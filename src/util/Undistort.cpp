@@ -383,7 +383,7 @@ void Undistort::loadPhotometricCalibration(std::string file, std::string noiseIm
 }
 
 template<typename T>
-ImageAndExposure* Undistort::undistort(const MinimalImage<T>* image_raw, float exposure, double timestamp, float factor) const
+ImageAndExposure* Undistort::undistort(const MinimalImage<T>* image_raw, const float* depth, float exposure, double timestamp, float factor) const
 {
 	if(image_raw->w != wOrg || image_raw->h != hOrg)
 	{
@@ -398,7 +398,9 @@ ImageAndExposure* Undistort::undistort(const MinimalImage<T>* image_raw, float e
 	if (!passthrough)
 	{
 		float* out_data = result->image;
+		float* out_depth = result->depth;
 		float* in_data = photometricUndist->output->image;
+		const float* in_depth = depth;
 
 		float* noiseMapX=0;
 		float* noiseMapY=0;
@@ -455,12 +457,24 @@ ImageAndExposure* Undistort::undistort(const MinimalImage<T>* image_raw, float e
 
 				// get array base pointer
 				const float* src = in_data + xxi + yyi * wOrg;
+				const float* src_d = in_depth + xxi + yyi * wOrg;
 
 				// interpolate (bilinear)
 				out_data[idx] =  xxyy * src[1+wOrg]
 									+ (yy-xxyy) * src[wOrg]
 									+ (xx-xxyy) * src[1]
 									+ (1-xx-yy+xxyy) * src[0];
+								// interpolate (bilinear)
+				out_depth[idx] =  xxyy * src_d[1+wOrg]
+									+ (yy-xxyy) * src_d[wOrg]
+									+ (xx-xxyy) * src_d[1]
+									+ (1-xx-yy+xxyy) * src_d[0];
+				if(std::isnan(out_depth[idx]))
+				{
+					out_depth[idx] = 100;
+				}
+
+
 			}
 		}
 
@@ -480,8 +494,8 @@ ImageAndExposure* Undistort::undistort(const MinimalImage<T>* image_raw, float e
 
 	return result;
 }
-template ImageAndExposure* Undistort::undistort<unsigned char>(const MinimalImage<unsigned char>* image_raw, float exposure, double timestamp, float factor) const;
-template ImageAndExposure* Undistort::undistort<unsigned short>(const MinimalImage<unsigned short>* image_raw, float exposure, double timestamp, float factor) const;
+template ImageAndExposure* Undistort::undistort<unsigned char>(const MinimalImage<unsigned char>* image_raw, const float* depth, float exposure, double timestamp, float factor) const;
+template ImageAndExposure* Undistort::undistort<unsigned short>(const MinimalImage<unsigned short>* image_raw, const float* depth, float exposure, double timestamp, float factor) const;
 
 
 void Undistort::applyBlurNoise(float* img) const
