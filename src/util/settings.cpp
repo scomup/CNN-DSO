@@ -119,7 +119,7 @@ bool setting_useExposure = true;
 float setting_affineOptModeA = 1e12; //-1: fix. >=0: optimize (with prior, if > 0).
 float setting_affineOptModeB = 1e8; //-1: fix. >=0: optimize (with prior, if > 0).
 
-int setting_gammaWeightsPixelSelect = 1; // 1 = use original intensity for pixel selection; 0 = use gamma-corrected intensity.
+int setting_gammaWeightsPixelSelect = 1; // 0 = use original intensity for pixel selection; 1 = use gamma-corrected intensity.
 
 
 
@@ -187,7 +187,7 @@ float freeDebugParam5 = 1;
 
 bool disableReconfigure=false;
 bool debugSaveImages = false;
-bool multiThreading = true;
+bool multiThreading = false;
 bool disableAllDisplay = false;
 bool setting_onlyLogKFPoses = true;
 bool setting_logStuff = true;

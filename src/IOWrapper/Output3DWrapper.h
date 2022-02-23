@@ -99,7 +99,7 @@ namespace IOWrap
  *
  * [ImmaturePoint]
  * 	->u,v: pixel-coordinates of point.
- *      ->idepth_min, idepth_max: the initialization sais that the inverse depth of this point is very likely
+ *      ->idepth: the initialization sais that the inverse depth of this point is very likely
  *        between these two thresholds (their mean being the best guess)
  *      ->host: pointer to host-frame of point.
  */

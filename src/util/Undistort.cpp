@@ -488,6 +488,7 @@ ImageAndExposure* Undistort::undistort(const MinimalImage<T>* image_raw, const f
 	else
 	{
 		memcpy(result->image, photometricUndist->output->image, sizeof(float)*w*h);
+		memcpy(result->depth, depth, sizeof(float)*w*h);
 	}
 
 	applyBlurNoise(result->image);

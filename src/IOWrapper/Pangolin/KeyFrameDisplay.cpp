@@ -108,7 +108,7 @@ void KeyFrameDisplay::setFromKF(FrameHessian* fh, CalibHessian* HCalib)
 
 		pc[numSparsePoints].u = p->u;
 		pc[numSparsePoints].v = p->v;
-		pc[numSparsePoints].idpeth = (p->idepth_max+p->idepth_min)*0.5f;
+		pc[numSparsePoints].idpeth = p->idepth;
 		pc[numSparsePoints].idepth_hessian = 1000;
 		pc[numSparsePoints].relObsBaseline = 0;
 		pc[numSparsePoints].numGoodRes = 1;

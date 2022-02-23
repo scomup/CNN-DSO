@@ -71,7 +71,7 @@ PointHessian* FullSystem::optimizeImmaturePoint(
 	float lastEnergy = 0;
 	float lastHdd=0;
 	float lastbd=0;
-	float currentIdepth=(point->idepth_max+point->idepth_min)*0.5f;
+	float currentIdepth=point->idepth;
 
 
 

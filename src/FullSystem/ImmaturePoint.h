@@ -76,8 +76,7 @@ public:
 
 	float my_type;
 
-	float idepth_min;
-	float idepth_max;
+	float idepth;
 	ImmaturePoint(int u_, int v_, FrameHessian* host_, float type, CalibHessian* HCalib);
 	~ImmaturePoint();
 
@@ -94,15 +93,7 @@ public:
 			ImmaturePointTemporaryResidual* tmpRes,
 			float &Hdd, float &bd,
 			float idepth);
-	float getdPixdd(
-			CalibHessian *  HCalib,
-			ImmaturePointTemporaryResidual* tmpRes,
-			float idepth);
 
-	float calcResidual(
-			CalibHessian *  HCalib, const float outlierTHSlack,
-			ImmaturePointTemporaryResidual* tmpRes,
-			float idepth);
 
 private:
 };

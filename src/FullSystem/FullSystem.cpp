@@ -541,7 +541,6 @@ void FullSystem::traceNewCoarse(FrameHessian* fh)
 		for(ImmaturePoint* ph : host->immaturePoints)
 		{
 			ph->traceOn(fh, KRKi, Kt, aff, &Hcalib, false );
-//			std::cout<<"idepth "<<ph->idepth_min<<" "<<ph->idepth_max<<std::endl;
 
 			if(ph->lastTraceStatus==ImmaturePointStatus::IPS_GOOD) trace_good++;
 			if(ph->lastTraceStatus==ImmaturePointStatus::IPS_BADCONDITION) trace_badcondition++;
@@ -635,16 +634,6 @@ void FullSystem::activatePointsMT()
 			ImmaturePoint* ph = host->immaturePoints[i];
 			ph->idxInImmaturePoints = i;
 
-			// delete points that have never been traced successfully, or that are outlier on the last trace.
-			if(!std::isfinite(ph->idepth_max) || ph->lastTraceStatus == IPS_OUTLIER)
-			{
-//				immature_invalid_deleted++;
-				// remove point.
-				delete ph;
-				host->immaturePoints[i]=0;
-				continue;
-			}
-
 			// can activate only if this is true.
 			bool canActivate = (ph->lastTraceStatus == IPS_GOOD
 					|| ph->lastTraceStatus == IPS_SKIPPED
@@ -652,7 +641,7 @@ void FullSystem::activatePointsMT()
 					|| ph->lastTraceStatus == IPS_OOB )
 							&& ph->lastTracePixelInterval < 8
 							&& ph->quality > setting_minTraceQuality
-							&& (ph->idepth_max+ph->idepth_min) > 0;
+							&& ph->idepth > 0;
 
 
 			// if I cannot activate the point, skip it. Maybe also delete it.
@@ -671,7 +660,7 @@ void FullSystem::activatePointsMT()
 
 
 			// see if we need to activate point due to distance map.
-			Vec3f ptp = KRKi * Vec3f(ph->u, ph->v, 1) + Kt*(0.5f*(ph->idepth_max+ph->idepth_min));
+			Vec3f ptp = KRKi * Vec3f(ph->u, ph->v, 1) + Kt*ph->idepth;
 			int u = ptp[0] / ptp[2] + 0.5f;
 			int v = ptp[1] / ptp[2] + 0.5f;
 
@@ -1287,7 +1276,7 @@ void FullSystem::initializeFromInitializer(FrameHessian* newFrame)
 		ImmaturePoint* pt = new ImmaturePoint(point->u+0.5f,point->v+0.5f,firstFrame,point->my_type, &Hcalib);
 
 		if(!std::isfinite(pt->energyTH)) { delete pt; continue; }
-		pt->idepth_max=pt->idepth_min=1;
+		pt->idepth=1;
 		PointHessian* ph = new PointHessian(pt, &Hcalib);
 		delete pt;
 		if(!std::isfinite(ph->energyTH)) {delete ph; continue;}
@@ -1372,9 +1361,8 @@ void FullSystem::initializeFromInitializerCNN(FrameHessian* newFrame)
 		float depth = *(depthmap_ptr + int((point->v*wG[0]+point->u+0.5f)));
 		float idepth=1.0/depth;
 		float var = 1.0/(6*depth);
-		pt->idepth_max=idepth;
-		pt->idepth_min=idepth;
-		if(pt->idepth_min<0) pt->idepth_min=0;
+		pt->idepth=idepth;
+		if(pt->idepth<0) pt->idepth=0;
 
 		PointHessian* ph = new PointHessian(pt, &Hcalib);
 		delete pt;
@@ -1440,9 +1428,8 @@ void FullSystem::initializeFromInitializerCNN(FrameHessian* newFrame)
 			if(selectionMap[i]==0) continue;
 
 			ImmaturePoint* impt = new ImmaturePoint(x,y,newFrame, selectionMap[i], &Hcalib);
-			impt->idepth_max=1./(*(depthmap_ptr+i));
-			impt->idepth_min=1./(*(depthmap_ptr+i));
-			if(impt->idepth_min<0) impt->idepth_min=0;
+			impt->idepth=1./(*(depthmap_ptr+i));
+			if(impt->idepth<0) impt->idepth=0;
 
 			if(!std::isfinite(impt->energyTH)) delete impt;
 			else newFrame->immaturePoints.push_back(impt);

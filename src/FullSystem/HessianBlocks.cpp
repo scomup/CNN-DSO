@@ -45,12 +45,11 @@ PointHessian::PointHessian(const ImmaturePoint* const rawPoint, CalibHessian* Hc
 	// set static values & initialization.
 	u = rawPoint->u;
 	v = rawPoint->v;
-	assert(std::isfinite(rawPoint->idepth_max));
 	//idepth_init = rawPoint->idepth_GT;
 
 	my_type = rawPoint->my_type;
 
-	setIdepthScaled((rawPoint->idepth_max + rawPoint->idepth_min)*0.5);
+	setIdepthScaled(rawPoint->idepth);
 	setPointStatus(PointHessian::INACTIVE);
 
 	int n = patternNum;
